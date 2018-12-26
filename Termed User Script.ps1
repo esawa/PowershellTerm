@@ -5,7 +5,7 @@
     [x] Disables the user account
     [x] Resets password
     [x] Fills in AD description (currently replaces what already exists rather than appending)
-    [] Clear Manager
+    [x] Clear Manager
     [] Clear Direct Reports (not sure if this is possible)
 
     Exchange
@@ -79,7 +79,7 @@ $Password = ([char[]](([char]33..[char]95) + ([char]97..[char]126)) | Sort-Objec
 #$Password
 
 #Changes the user's password to the above randomly generated one
-Set-ADAccountPassword $TermedUser.DistinguishedName -Reset -NewPassword (ConvertTo-SecureString -AsPlainText $Password -Force)
+Set-ADAccountPassword $UserADAccount.DistinguishedName -Reset -NewPassword (ConvertTo-SecureString -AsPlainText $Password -Force)
 
 #Gets today's date
 $Date = Get-Date -UFormat "%m/%d/%Y"
@@ -87,5 +87,8 @@ $Date = Get-Date -UFormat "%m/%d/%Y"
 
 #Sets the description of the AD object
 #Currently replaces all description text
-Set-ADUser $TermedUser -Description "Disabled $Date by $Initials"
+Set-ADUser $TermedUser -Description "Disabled $Date by $Initials" 
+
+#Clears user's manager field
+Set-ADUser $TermedUser -Manager $null
 
