@@ -75,3 +75,5 @@ $Date = Get-Date -UFormat "%m/%d/%Y"
 #Sets the description of the AD object
 #Currently replaces all description text
 Set-ADUser $TermedUser -Description "Disabled $Date by $Initials"
+
+#TEST
