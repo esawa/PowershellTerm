@@ -23,6 +23,13 @@
     [] Create shortcut in manager's H-drive
 
 #>
+
+<#
+
+    This section involves reading in put from the user and storing that data in a variable. 
+    It also creates an AD user object and does some checks before moving on with the script.
+
+#>
 #Prompt for script user's initials
 $Initials = Read-Host -Prompt 'Enter YOUR Initials'
 #Prompt for termed user's username
@@ -55,6 +62,12 @@ else {
     break
 }
 
+<#
+
+    This section does most of the AD term task
+
+#>
+
 #TEMPORARY: Remove when script is usable
 Write-Host 'This is a placeholder for remaining script. A test user is currently being used for remaining of code'
 
@@ -76,4 +89,3 @@ $Date = Get-Date -UFormat "%m/%d/%Y"
 #Currently replaces all description text
 Set-ADUser $TermedUser -Description "Disabled $Date by $Initials"
 
-#TEST
