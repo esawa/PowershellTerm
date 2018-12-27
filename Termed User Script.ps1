@@ -6,7 +6,7 @@
     [x] Resets password
     [x] Fills in AD description (currently replaces what already exists rather than appending)
     [x] Clear Manager
-    [] Clear Direct Reports (not sure if this is possible)
+    [x] Clear Direct Reports
 
     Exchange
     [] Hide from address list
@@ -92,3 +92,10 @@ Set-ADUser $TermedUser -Description "Disabled $Date by $Initials"
 #Clears user's manager field
 Set-ADUser $TermedUser -Manager $null
 
+#Clears user's direct reports
+
+$DirectReports = Get-ADUser -Filter {SamAccountName -eq $TermedUser} -Properties directreports | Select-Object -ExpandProperty DirectReports
+
+foreach ($user in $DirectReports) {
+    Set-ADUser $user -Manager $null 
+}
