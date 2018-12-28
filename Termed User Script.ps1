@@ -4,18 +4,19 @@
     [x] Reads input for user to be termed. During testing, this is disabled as a test user is being used
     [x] Disables the user account
     [x] Resets password
-    [x] Fills in AD description (currently replaces what already exists rather than appending)
+    [x] Fills in AD description
     [x] Clear Manager
     [x] Clear Direct Reports
 
     Exchange
-    [] Hide from address list
+    [] Hide from address list (on prem)
     [] Give full access to their manager
-    [] Convert to shared mailbox
     [] Set away message
+    [] Convert to shared mailbox
 
-    AD (again)
-    [] Remove them from all security and distribution lists (this may require a pause in the script)
+    AD (again. Both of these steps need to be completed after the mailbox has finished converting to a shared mailbox. Probably need to put a pause in)
+    [] Remove them from all security and distribution lists
+    [] Move into termed 60 days OU
 
     H-drive (not sure if this will be possible)
     [] Move into disabled user folder
@@ -34,6 +35,8 @@
 $Initials = Read-Host -Prompt 'Enter YOUR Initials'
 #Prompt for termed user's username
 #$TermedUser = Read-Host -Prompt 'Enter Termed Username'
+#Prompt for termed user's manager's username
+$Manager = Read-Host -Prompt 'Enter Manager Username'
 
 #TEMPORARY: Use Tuser as a placeholder while testing
 $TermedUser = 'tuser'
@@ -64,7 +67,7 @@ else {
 
 <#
 
-    This section does most of the AD term task
+    This section does most of the AD term tasks
 
 #>
 
@@ -86,16 +89,34 @@ $Date = Get-Date -UFormat "%m/%d/%Y"
 #$Date
 
 #Sets the description of the AD object
-#Currently replaces all description text
 Set-ADUser $TermedUser -Description "Disabled $Date by $Initials" 
 
 #Clears user's manager field
 Set-ADUser $TermedUser -Manager $null
 
 #Clears user's direct reports
-
 $DirectReports = Get-ADUser -Filter {SamAccountName -eq $TermedUser} -Properties directreports | Select-Object -ExpandProperty DirectReports
 
+#iterates through all the termed user's direct reports and clears their manager
 foreach ($user in $DirectReports) {
     Set-ADUser $user -Manager $null 
 }
+
+<#
+
+    This section does the exchange term tasks
+
+#>
+
+#Making Changes in Exchange requires you to created a PSSession
+#Prompts the user to enter credentials
+$UserCredential = Get-Credential
+#Creates the session
+$Session = New-PSSession -ConfigurationName Microsoft.Exchange -ConnectionUri https://outlook.office365.com/powershell-liveid/ -Credential $UserCredential -Authentication Basic -AllowRedirection
+#Imports all commands
+Import-PSSession $Session -DisableNameChecking
+
+Add-MailboxPermission -Identity $TermedUser -User $Manager -AccessRights FullAccess -InheritanceType All
+
+#Ends the above PSSession
+Remove-PSSession $Session
